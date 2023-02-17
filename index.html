@@ -1,11 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>动态背景示例</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="utf-8">
+  <title>PDF Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .canvas {
+    margin: 10px;
+    cursor: pointer;
+    width: calc(25% - 20px); /* 每一行显示4个canvas */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .canvas span {
+    display: block;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
-	<div id="bg"></div>
-	<script type="text/javascript" src="script.js"></script>
+  <div class="container"></div>
+
+  <script>
+    const pdfFile = 'resume.pdf'
+    const container = document.querySelector('.container');
+
+    // 将PDF文件转换成canvas，并显示在网页上
+    pdfjsLib.getDocument(pdfFile, { mode: 'no-cors' }).promise.then(pdf => {
+      for (let i = 1; i <= pdf.numPages; i++) {
+        pdf.getPage(i).then(page => {
+          const viewport = page.getViewport({ scale: 1 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+
+          // 根据宽高比例计算缩放比例
+          const width = container.offsetWidth / 4 - 20;
+          const height = width * viewport.height / viewport.width;
+          canvas.width = width;
+          canvas.height = height;
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: page.getViewport({ scale: width / viewport.width })
+          };
+          page.render(renderContext).promise.then(() => {
+            const canvasDiv = document.createElement('div');
+            canvasDiv.classList.add('canvas');
+            canvasDiv.appendChild(canvas);
+            const canvasNum = document.createElement('span');
+            canvasNum.textContent = i;
+            canvasDiv.appendChild(canvasNum);
+            canvasDiv.addEventListener('click', () => {
+              window.open(`${pdfFile}#page=${i}`, '_blank');
+            });
+            if (i === 1) {
+              container.prepend(canvasDiv);
+            } else {
+              container.appendChild(canvasDiv);
+            }
+
+            // 每四页换一行
+            if (i % 4 === 0) {
+              const lineBreak = document.createElement('div');
+              lineBreak.style.width = '100%';
+              container.appendChild(lineBreak);
+            }
+          });
+        });
+      }
+    });
+
+    // 等比例缩放
+    window.addEventListener('resize', () => {
+      const canvasList = document.querySelectorAll('.canvas');
+      for (let i = 0; i < canvasList.length; i++) {
+        const canvas = canvasList[i].querySelector('canvas');
+        const canvasNum = canvasList[i].querySelector('span');
+        const page = i + 1;
+        pdfjsLib.getDocument(pdfFile, { mode: 'no-cors' }).promise.then(pdf => {
+          pdf.getPage(page).then(page => {
+            const viewport = page.getViewport({ scale: 1 });
+            const width = canvasList[i].offsetWidth;
+            const height = width * viewport.height / viewport.width;
+            canvas.width = width;
+            canvas.height = height;
+            const scale = width / viewport.width;
+            const renderContext = {
+              canvasContext: canvas.getContext('2d'),
+              viewport: page.getViewport({ scale })
+            };
+            page.render(renderContext).promise.then(() => {
+              canvasNum.textContent = page.pageNumber;
+            });
+          });
+        });
+      }
+    });
+
+
+  </script>
 </body>
 </html>
