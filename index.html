@@ -1,98 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Resume PDF Viewer</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<style type="text/css">
-		body {
-			margin: 0;
-			padding: 0;
-		}
-		.pdf-page {
-			display: inline-block;
-			height: 300px;
-			width: 210px;
-			margin: 20px;
-			position: relative;
-		}
-		.pdf-page img {
-			height: 100%;
-			width: 100%;
-			object-fit: cover;
-		}
-		.pdf-page:hover img {
-			transform: scale(1.1);
-			z-index: 1;
-		}
-		.pdf-page:hover::before {
-			content: "";
-			position: absolute;
-			top: 0;
-			left: 0;
-			height: 100%;
-			width: 100%;
-			background: rgba(0,0,0,0.5);
-			z-index: -1;
-			transition: all 0.3s;
-		}
-		.pdf-page a {
-			position: absolute;
-			top: 0;
-			left: 0;
-			height: 100%;
-			width: 100%;
-		}
-	</style>
+	<title>动态背景示例</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-	<div id="pdf-pages">
-	</div>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function() {
-			var pdfURL = "resume.pdf"; // 修改为您的PDF文件名称
-			var pdfDoc = null;
-			var pageNum = 1;
-			var pageRendering = false;
-			var pageNumPending = null;
-			var scale = 1.5;
-			var canvas = document.createElement('canvas');
-			var ctx = canvas.getContext('2d');
-			PDFJS.getDocument(pdfURL).promise.then(function(pdfDoc_) {
-				pdfDoc = pdfDoc_;
-				var pages = pdfDoc.numPages;
-				for (var i = 1; i <= pages; i++) {
-					var pdfPage = pdfDoc.getPage(i);
-					pdfPage.then(function(page) {
-						var viewport = page.getViewport({ scale: scale });
-						canvas.height = viewport.height;
-						canvas.width = viewport.width;
-						var renderContext = {
-							canvasContext: ctx,
-							viewport: viewport
-						};
-						var pageDiv = document.createElement('div');
-						pageDiv.classList.add('pdf-page');
-						pageDiv.style.width = viewport.width + 'px';
-						pageDiv.style.height = viewport.height + 'px';
-						document.getElementById('pdf-pages').appendChild(pageDiv);
-						page.render(renderContext).promise.then(function() {
-							var imgData = canvas.toDataURL();
-							var img = document.createElement('img');
-							img.src = imgData;
-							pageDiv.appendChild(img);
-							var pageLink = document.createElement('a');
-							pageLink.href = pdfURL + "#page=" + i;
-							pageLink.target = "_blank";
-							pageDiv.appendChild(pageLink);
-						});
-					});
-				}
-			});
-		});
-	</script>
+	<div id="bg"></div>
+	<script type="text/javascript" src="script.js"></script>
 </body>
 </html>
-
