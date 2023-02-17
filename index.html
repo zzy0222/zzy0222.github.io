@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Hello, World!</title>
+    <meta charset="UTF-8">
+    <title>简历</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <h1>Hello, World!</h1>
-    <p>This is a simple webpage hosted on GitHub Pages.</p>
+    <div class="pdf-wrapper">
+      <canvas id="pdf-canvas"></canvas>
+      <div class="button-wrapper">
+        <a href="resume.pdf" download>下载PDF简历</a>
+      </div>
+    </div>
+    <script src="pdfjs/build/pdf.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
+
+
+
