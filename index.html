@@ -1,116 +1,98 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>My Resume</title>
-    <style>
-      /* 定义样式 */
-      body {
-        background-color: #f5f5f5;
-      }
-      canvas {
-        display: block;
-        margin: 0 auto;
-      }
-      #prev, #next {
-        display: block;
-        margin: 20px auto;
-        width: 100px;
-        height: 30px;
-        text-align: center;
-        line-height: 30px;
-        border-radius: 5px;
-        background-color: #4CAF50;
-        color: white;
-        text-decoration: none;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="pdf-canvas"></canvas>
-    <a href="resume.pdf" download>下载简历PDF文件</a>
-    <div>
-      <a href="#" id="prev">上一页</a>
-      <a href="#" id="next">下一页</a>
-    </div>
-    <script src="pdf.js"></script>
-    <script>
-      var pdfDoc = null,
-          pageNum = 1,
-          pageRendering = false,
-          pageNumPending = null,
-          canvas = document.getElementById('pdf-canvas'),
-          ctx = canvas.getContext('2d');
-
-      /**
-       * 渲染页面
-       */
-      function renderPage(num) {
-        pageRendering = true;
-        // 获取页面
-        pdfDoc.getPage(num).then(function(page) {
-          // 设置canvas大小
-          var viewport = page.getViewport({scale: 1.0});
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-          // 渲染页面
-          var renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-          };
-          page.render(renderContext).promise.then(function() {
-            pageRendering = false;
-            if (pageNumPending !== null) {
-              renderPage(pageNumPending);
-              pageNumPending = null;
-            }
-          });
-        });
-        // 更新页码
-        document.getElementById('page-num').textContent = num;
-      }
-    
-      /**
-       * 显示前一页
-       */
-      function onPrevPage() {
-        if (pageNum <= 1) {
-          return;
-        }
-        pageNum--;
-        queueRenderPage(pageNum);
-      }
-    
-      /**
-       * 显示后一页
-       */
-      function onNextPage() {
-        if (pageNum >= pdfDoc.numPages) {
-          return;
-        }
-        pageNum++;
-        queueRenderPage(pageNum);
-      }
-    
-      /**
-       * 将页面添加到渲染队列
-       */
-      function queueRenderPage(num) {
-        if (pageRendering) {
-          pageNumPending = num;
-        } else {
-          renderPage(num);
-        }
-      }
-    
-      /**
-       * 加载PDF文件并开始渲染第一页
-       */
-      function init() {
-        pdfjsLib.getDocument('resume.pdf').promise.then(function(pdfDoc_) {
-          pdfDoc = pdfDoc_;
-          document.getElementById('page-count').textContent = pdfDoc.numPages;
-          render
-
-
+<head>
+	<title>Resume PDF Viewer</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+		}
+		.pdf-page {
+			display: inline-block;
+			height: 300px;
+			width: 210px;
+			margin: 20px;
+			position: relative;
+		}
+		.pdf-page img {
+			height: 100%;
+			width: 100%;
+			object-fit: cover;
+		}
+		.pdf-page:hover img {
+			transform: scale(1.1);
+			z-index: 1;
+		}
+		.pdf-page:hover::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 100%;
+			background: rgba(0,0,0,0.5);
+			z-index: -1;
+			transition: all 0.3s;
+		}
+		.pdf-page a {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="pdf-pages">
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var pdfURL = "resume.pdf"; // 修改为您的PDF文件名称
+			var pdfDoc = null;
+			var pageNum = 1;
+			var pageRendering = false;
+			var pageNumPending = null;
+			var scale = 1.5;
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			PDFJS.getDocument(pdfURL).promise.then(function(pdfDoc_) {
+				pdfDoc = pdfDoc_;
+				var pages = pdfDoc.numPages;
+				for (var i = 1; i <= pages; i++) {
+					var pdfPage = pdfDoc.getPage(i);
+					pdfPage.then(function(page) {
+						var viewport = page.getViewport({ scale: scale });
+						canvas.height = viewport.height;
+						canvas.width = viewport.width;
+						var renderContext = {
+							canvasContext: ctx,
+							viewport: viewport
+						};
+						var pageDiv = document.createElement('div');
+						pageDiv.classList.add('pdf-page');
+						pageDiv.style.width = viewport.width + 'px';
+						pageDiv.style.height = viewport.height + 'px';
+						document.getElementById('pdf-pages').appendChild(pageDiv);
+						page.render(renderContext).promise.then(function() {
+							var imgData = canvas.toDataURL();
+							var img = document.createElement('img');
+							img.src = imgData;
+							pageDiv.appendChild(img);
+							var pageLink = document.createElement('a');
+							pageLink.href = pdfURL + "#page=" + i;
+							pageLink.target = "_blank";
+							pageDiv.appendChild(pageLink);
+						});
+					});
+				}
+			});
+		});
+	</script>
+</body>
+</html>
 
