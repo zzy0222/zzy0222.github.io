@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <title>PDF Viewer</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+  </script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
   .container {
@@ -33,7 +37,7 @@
     const container = document.querySelector('.container');
 
     // 将PDF文件转换成canvas，并显示在网页上
-    pdfjsLib.getDocument(pdfFile, { mode: 'no-cors' }).promise.then(pdf => {
+    pdfjsLib.getDocument(pdfFile).promise.then(pdf => {
       for (let i = 1; i <= pdf.numPages; i++) {
         pdf.getPage(i).then(page => {
           const viewport = page.getViewport({ scale: 1 });
@@ -84,7 +88,7 @@
         const canvas = canvasList[i].querySelector('canvas');
         const canvasNum = canvasList[i].querySelector('span');
         const page = i + 1;
-        pdfjsLib.getDocument(pdfFile, { mode: 'no-cors' }).promise.then(pdf => {
+        pdfjsLib.getDocument(pdfFile).promise.then(pdf => {
           pdf.getPage(page).then(page => {
             const viewport = page.getViewport({ scale: 1 });
             const width = canvasList[i].offsetWidth;
